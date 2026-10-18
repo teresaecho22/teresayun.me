@@ -807,10 +807,10 @@ footer { padding-block: 40px 110px !important; }
     <div id="daySections">
       <section class="wrap sec3 about3" id="about" aria-labelledby="h-about">
         <h2 id="h-about" class="h3x">About</h2>
-        <p class="about-p">Teresa is currently a first-year at MIT studying <span class="attn" tabindex="0" data-links="p-flow">AI</span> and math. I work on <span class="attn" tabindex="0" data-links="p-rocket">avionics and controls</span> for the MIT Rocket Team. Next, I want to build <span class="attn" tabindex="0" data-links="p-flow">generative models</span> and <span class="attn" tabindex="0" data-links="p-vex">physical AI</span>.</p>
+        <p class="about-p">Teresa is currently a first-year at MIT, studying <span class="attn" tabindex="0" data-links="p-flow">AI</span> and math. She is working on <span class="attn" tabindex="0" data-links="p-rocket">avionics and controls</span> for the MIT Rocket Team. Next, she wants to build <span class="attn" tabindex="0" data-links="p-flow">generative models</span> and <span class="attn" tabindex="0" data-links="p-vex">physical AI</span>.</p>
         <dl class="kv about-kv">
           <dt>Name</dt><dd>Teresa Wong · Wǎn Yún 婉芸 <button class="btn say" id="say" type="button" aria-label="Hear how 婉芸 is pronounced">play</button></dd>
-          <dt>Languages</dt><dd>English and Mandarin (native), French, some Japanese</dd>
+          <dt>Languages</dt><dd>English & Mandarin (native), French, some Japanese</dd>
         </dl>
       </section>
 
@@ -1813,11 +1813,11 @@ footer { padding-block: 40px 110px !important; }
   // ---------- 2 · Rock: strings + chord chart ----------
   const stRock = $('#st-rock'), stringsC = $('#strings');
   let strings = null;
-  // E7sus4 = 0 2 0 2 0 0 → E B D A B E (root, 5th, ♭7, sus4)
-  const CHORDS = { E7sus4: [0, 2, 0, 2, 0, 0] };
+  // Cadd9 = -1, 3, 2, 0, 3, 0
+  const CHORDS = { Cadd9: [-1, 3, 2, 0, 3, 0] };
   const OPEN = [40, 45, 50, 55, 59, 64]; // E2 A2 D3 G3 B3 E4
-  const LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
-  const chord = 'E7sus4';
+  const LABELS = ['E', 'A', 'D', 'G', 'B', 'E'];
+  const chord = 'Cadd9';
   let ampOn = false, lastPX = null;
   const sAmp = new Float32Array(6), sPh = new Float32Array(6);
   const R_INK = tok('--rock-ink'), R_HOT = tok('--rock-hot'), R_AMB = tok('--rock-amber'), R_MUTED = tok('--rock-muted');
