@@ -78,6 +78,8 @@ img { max-width: 100%; }
 }
 
 * { box-sizing: border-box; }
+/* hidden must win over any display rule (the concert overlay, the day/night sections), however the file is opened */
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
