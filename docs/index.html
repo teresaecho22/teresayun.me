@@ -80,6 +80,8 @@ img { max-width: 100%; }
 * { box-sizing: border-box; }
 /* hidden must win over any display rule (the concert overlay, the day/night sections), however the file is opened */
 [hidden] { display: none !important; }
+/* the big particle name: Cookie Monster (freeware; see fonts/CookieMonster-LICENSE.txt) */
+@font-face { font-family: "Cookie Monster"; src: url("fonts/CookieMonster.ttf") format("truetype"); font-display: swap; }
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
@@ -1128,7 +1130,7 @@ footer { padding-block: 40px 110px !important; }
   for (let i = 0; i < N; i++) orange[i] = Math.random() < 0.05 ? 1 : 0;
 
   let W = 0, H = 0, cx = 0, cy = 0, sx = 1, sy = 1, laidOut = false;
-  const FONT = '"Bricolage Grotesque", "Arial Black", system-ui, sans-serif';
+  const FONT = '"Cookie Monster", "Bricolage Grotesque", "Arial Black", system-ui, sans-serif';
 
   function layout() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1143,10 +1145,10 @@ footer { padding-block: 40px 110px !important; }
     const o = off.getContext('2d');
     const lines = W < 560 ? ['Teresa', 'Wong'] : ['Teresa Wong'];
     let fs = H * (lines.length > 1 ? 0.42 : 0.6);
-    o.font = `800 ${fs}px ${FONT}`;
+    o.font = `400 ${fs}px ${FONT}`;
     const widest = Math.max(...lines.map((l) => o.measureText(l).width));
     fs *= Math.min(1, (W * 0.92) / widest);
-    o.font = `800 ${fs}px ${FONT}`;
+    o.font = `400 ${fs}px ${FONT}`;
     o.textAlign = 'center'; o.textBaseline = 'middle'; o.fillStyle = '#000';
     const lh = fs * 0.96;
     lines.forEach((l, j) => o.fillText(l, W / 2, H / 2 + (j - (lines.length - 1) / 2) * lh));
@@ -2210,7 +2212,7 @@ footer { padding-block: 40px 110px !important; }
     clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { layout(); mW = 0; }, 120);
   }).observe(canvas);
   const fontReady = (document.fonts && document.fonts.load)
-    ? Promise.race([document.fonts.load(`800 120px "Bricolage Grotesque"`), new Promise((r) => setTimeout(r, 1500))])
+    ? Promise.race([document.fonts.load(`400 120px "Cookie Monster"`), new Promise((r) => setTimeout(r, 1500))])
     : Promise.resolve();
   fontReady.then(() => { layout(); if (reduced) setT(1); else introStart = performance.now() + 350; });
   requestAnimationFrame(frame);

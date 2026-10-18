@@ -11,6 +11,7 @@ Usage (from the project root):
 
 from pathlib import Path
 import re
+import shutil
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "prototype" / "index.html"
@@ -104,6 +105,10 @@ def build() -> None:
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     (OUT / "favicon.svg").write_text(FAVICON, encoding="utf-8")
     (OUT / "404.html").write_text(NOT_FOUND, encoding="utf-8")
+    # fonts the page loads by relative path (prototype/fonts → docs/fonts)
+    fonts = SRC.parent / "fonts"
+    if fonts.is_dir():
+        shutil.copytree(fonts, OUT / "fonts", dirs_exist_ok=True)
     print(f"built {OUT.relative_to(ROOT)}/ from {SRC.relative_to(ROOT)}")
 
 
