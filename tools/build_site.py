@@ -20,7 +20,7 @@ DOMAIN = "teresayun.me"
 TITLE = "Teresa Wong"
 DESCRIPTION = (
     "Teresa Wong, MIT '30, studying AI and math. Generative models from scratch, "
-    "avionics and controls for the MIT Rocket Team, and music by night."
+    "avionics and controls for the MIT Rocket Team"
 )
 
 HEAD = f"""<!doctype html>
