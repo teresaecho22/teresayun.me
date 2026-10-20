@@ -600,14 +600,6 @@ footer { padding-block: 40px 110px !important; }
 .b-chopin .flist, .b-chopin .hint { color: var(--chopin-muted); }
 .b-chopin .flist b { color: var(--chopin-gold); }
 .b-chopin .sbtn { color: var(--chopin-gold); }
-.keys { position: relative; display: flex; height: 190px; max-width: 520px; width: 100%; margin-left: auto; user-select: none; touch-action: manipulation; }
-.keys .w { flex: 1 1 0; position: relative; margin: 0 2px; border-radius: 0 0 6px 6px; background: var(--key-white); border: none; cursor: pointer; padding: 0; }
-.keys .w.down { background: var(--key-white-down); }
-.keys .b { position: absolute; top: 0; width: 8.4%; height: 58%; transform: translateX(-50%); border-radius: 0 0 4px 4px; background: var(--key-black); border: 1px solid var(--chopin-line); cursor: pointer; z-index: 2; padding: 0; }
-.keys .b.down { background: var(--key-black-down); }
-.keys button span { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-family: var(--font-mono); font-size: 10.5px; color: var(--chopin-bg); opacity: 0.55; pointer-events: none; }
-.keys .b span { color: var(--chopin-ink); bottom: 6px; }
-.keys button:focus-visible { outline: 2px solid var(--chopin-gold); outline-offset: 2px; }
 
 /* rock */
 .b-rock { color: var(--rock-ink); }
@@ -725,7 +717,6 @@ footer { padding-block: 40px 110px !important; }
   .dial-st span { display: none; }
   .dial-needle { top: 0; bottom: 0; height: auto; width: 2px; margin: 0 0 0 -1px; left: calc(var(--needle, 0) * 100%); right: auto; }
   .band-in { grid-template-columns: minmax(0, 1fr); padding-block: 112px 72px; min-height: 0; }
-  .keys { margin-left: 0; }
   .b-chopin .moon { width: 140px; height: 140px; top: 60px; right: 6%; }
 }
 @media (max-width: 760px) {
@@ -913,8 +904,8 @@ footer { padding-block: 40px 110px !important; }
       <div class="dial-scale">
         <div class="dial-ticks"></div>
         <button class="dial-st" type="button" data-target="st-classical" data-fq="48.1" style="--c: var(--chopin-gold)"><i></i><span>Classical</span></button>
-        <button class="dial-st" type="button" data-target="st-rock" data-fq="94.7" style="--c: var(--rock-hot)"><i></i><span>Rock</span></button>
-        <button class="dial-st" type="button" data-target="st-pom" data-fq="99.3" style="--c: var(--pom-lava)"><i></i><span>Pompeii</span></button>
+        <button class="dial-st" type="button" data-target="st-pom" data-fq="94.7" style="--c: var(--pom-lava)"><i></i><span>Pompeii</span></button>
+        <button class="dial-st" type="button" data-target="st-rock" data-fq="99.3" style="--c: var(--rock-hot)"><i></i><span>Rock</span></button>
         <button class="dial-st" type="button" data-target="st-miku" data-fq="103.9" style="--c: var(--miku-teal)"><i></i><span>Miku</span></button>
         <div class="dial-needle"></div>
       </div>
@@ -941,18 +932,37 @@ footer { padding-block: 40px 110px !important; }
           <div class="btnrow"><button class="sbtn" id="rainBtn" type="button" aria-pressed="false">listen to the rain</button></div>
           <div class="hint">The “Raindrop” Prelude, Op. 28 No. 15, is built on one repeated A♭ (G♯ in the middle section). This button plays that note.</div>
         </div>
+      </div>
+    </section>
+
+    <section class="band b-pom" id="st-pom" data-fq="94.7" aria-labelledby="h-pom">
+      <div class="deco" aria-hidden="true"><canvas class="bg" id="ash"></canvas></div>
+      <div class="wrap band-in">
         <div>
-          <div class="keys" id="keys" role="group" aria-label="Playable piano, one octave from C4"></div>
-          <div class="hint" style="text-align:right">click the keys, or type A W S E D F T G Y H U J K</div>
+          <div class="fqtag">94.7 FM · Game OST</div>
+          <h2 id="h-pom">Danger in Pompeii</h2>
+          <p>Teresa composed and produced the soundtrack for the mobile game Danger in Pompeii.</p>
+          <div class="achv" id="achv"><span class="cup" aria-hidden="true"></span><span><b>Achievement unlocked</b>35,000+ App Store downloads</span></div>
+        </div>
+        <div class="select">
+          <div class="hud"><span class="hearts" aria-label="3 lives">♥♥♥</span><span>SCORE 035000+</span></div>
+          <h3>Select track</h3>
+          <ol id="tracks">
+            <li><button type="button" aria-pressed="false" data-src="audio/pompeii-main-theme.mp4" data-title="Main Theme"><span>Main Theme</span><span>2:06</span></button></li>
+            <li><button type="button" aria-pressed="false" data-src="audio/pompeii-post-eruption.mp4" data-title="Post eruption track"><span>Post eruption track</span><span>2:00</span></button></li>
+          </ol>
+          <div class="pbar" aria-hidden="true"><i id="trackBar"></i></div>
+          <div class="status" id="trackStatus" role="status">pick a track</div>
+          <audio id="ost" preload="none"></audio>
         </div>
       </div>
     </section>
 
-    <section class="band b-rock" id="st-rock" data-fq="94.7" aria-labelledby="h-rock">
+    <section class="band b-rock" id="st-rock" data-fq="99.3" aria-labelledby="h-rock">
       <div class="deco" aria-hidden="true"><div class="spot s1"></div><div class="spot s2"></div></div>
       <div class="wrap band-in">
         <div>
-          <div class="fqtag">94.7 FM · Live house</div>
+          <div class="fqtag">99.3 FM · Live house</div>
           <h2 id="h-rock">Leader.<br><em>Guitarist.</em></h2>
           <p>Teresa led a rock band in high school and played guitar in it.</p>
           <div class="posters" aria-hidden="true">
@@ -968,29 +978,6 @@ footer { padding-block: 40px 110px !important; }
             <button class="sbtn" id="strum" type="button">strum</button>
           </div>
           <div class="hint">Sweep across the strings to hear Teresa's favourite chord!</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="band b-pom" id="st-pom" data-fq="99.3" aria-labelledby="h-pom">
-      <div class="deco" aria-hidden="true"><canvas class="bg" id="ash"></canvas></div>
-      <div class="wrap band-in">
-        <div>
-          <div class="fqtag">99.3 FM · Game OST</div>
-          <h2 id="h-pom">Danger in Pompeii</h2>
-          <p>Teresa composed and produced the soundtrack for the mobile game Danger in Pompeii.</p>
-          <div class="achv" id="achv"><span class="cup" aria-hidden="true"></span><span><b>Achievement unlocked</b>35,000+ App Store downloads</span></div>
-        </div>
-        <div class="select">
-          <div class="hud"><span class="hearts" aria-label="3 lives">♥♥♥</span><span>SCORE 035000+</span></div>
-          <h3>Select track</h3>
-          <ol id="tracks">
-            <li><button type="button" aria-pressed="false" data-src="audio/pompeii-main-theme.mp4" data-title="Main Theme"><span>Main Theme</span><span>2:06</span></button></li>
-            <li><button type="button" aria-pressed="false" data-src="audio/pompeii-post-eruption.mp4" data-title="Post eruption track"><span>Post eruption track</span><span>2:00</span></button></li>
-          </ol>
-          <div class="pbar" aria-hidden="true"><i id="trackBar"></i></div>
-          <div class="status" id="trackStatus" role="status">pick a track</div>
-          <audio id="ost" preload="none"></audio>
         </div>
       </div>
     </section>
@@ -1592,14 +1579,14 @@ footer { padding-block: 40px 110px !important; }
   const fqFrac = (f) => (f - FQ_LO) / (FQ_HI - FQ_LO);
   const dialEl = $('#dial'), dialFq = $('#dialFq'), dialName = $('#dialName'), sigLed = $('#sigLed');
   const dialSts = [...document.querySelectorAll('.dial-st')];
-  const NAMES = ['Chopin', 'Rock', 'Pompeii', 'Miku'];
+  const NAMES = ['Classical', 'Pompeii', 'Rock', 'Miku'];
   dialSts.forEach((b) => {
     b.style.setProperty('--at', fqFrac(+b.dataset.fq).toFixed(4));
     b.addEventListener('click', () => document.getElementById(b.dataset.target).scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }));
   });
   let staticAmt = 0, lastFq = -1;
   const stageEl = $('#stage');
-  const STAGE = ['--chopin-bg', '--rock-bg', '--pom-bg', '--miku-bg'].map(tok);
+  const STAGE = ['--chopin-bg', '--pom-bg', '--rock-bg', '--miku-bg'].map(tok);
   function updateDial() {
     const c = scrollY + innerHeight / 2;
     const centers = bands.map((b) => { const r = b.getBoundingClientRect(); return r.top + scrollY + r.height / 2; });
@@ -1817,37 +1804,6 @@ footer { padding-block: 40px 110px !important; }
       g.beginPath(); g.ellipse(s.x, s.y, s.r * 2.2, s.r * 0.6, 0, 0, Math.PI * 2); g.stroke();
     }
   }
-  const keysEl = $('#keys');
-  const KEYMAP = ['a', 'w', 's', 'e', 'd', 'f', 't', 'g', 'y', 'h', 'u', 'j', 'k'];
-  const NOTE = ['C4', 'C♯4', 'D4', 'D♯4', 'E4', 'F4', 'F♯4', 'G4', 'G♯4', 'A4', 'A♯4', 'B4', 'C5'];
-  const BLACK = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0];
-  const keyBtns = [];
-  let whites = 0;
-  for (let i = 0; i < 13; i++) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = BLACK[i] ? 'b' : 'w';
-    b.setAttribute('aria-label', NOTE[i]);
-    b.innerHTML = `<span>${KEYMAP[i].toUpperCase()}</span>`;
-    if (BLACK[i]) b.style.left = `${(whites / 8) * 100}%`; else whites++;
-    b.addEventListener('pointerdown', (e) => { e.preventDefault(); playKey(i); });
-    b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playKey(i); } });
-    keysEl.appendChild(b); keyBtns.push(b);
-  }
-  function playKey(i) {
-    piano(mtof(60 + i), 0.85);
-    const b = keyBtns.at(i);
-    b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 180);
-    spawnGold(0.45 + (i / 12) * 0.5);
-  }
-  addEventListener('keydown', (e) => {
-    if (nightSections.hidden || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
-    if (!inView.get(stChopin)) return;
-    const tg = e.target;
-    if (tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.isContentEditable)) return;
-    const i = KEYMAP.indexOf(e.key.toLowerCase());
-    if (i < 0) return;
-    e.preventDefault(); playKey(i);
-  });
   const rainBtn = $('#rainBtn');
   let rainTimer = 0;
   function stopRain() { clearInterval(rainTimer); rainTimer = 0; rainBtn.setAttribute('aria-pressed', 'false'); rainBtn.textContent = 'listen to the rain'; }
