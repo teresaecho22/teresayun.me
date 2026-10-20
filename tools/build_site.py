@@ -105,10 +105,14 @@ def build() -> None:
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     (OUT / "favicon.svg").write_text(FAVICON, encoding="utf-8")
     (OUT / "404.html").write_text(NOT_FOUND, encoding="utf-8")
-    # fonts the page loads by relative path (prototype/fonts → docs/fonts)
-    fonts = SRC.parent / "fonts"
-    if fonts.is_dir():
-        shutil.copytree(fonts, OUT / "fonts", dirs_exist_ok=True)
+    # files the page loads by relative path (prototype/fonts → docs/fonts, prototype/audio → docs/audio)
+    for folder in ("fonts", "audio"):
+        src = SRC.parent / folder
+        if src.is_dir():
+            dst = OUT / folder
+            if dst.exists():
+                shutil.rmtree(dst)  # so files removed from the prototype disappear from the site too
+            shutil.copytree(src, dst)
     print(f"built {OUT.relative_to(ROOT)}/ from {SRC.relative_to(ROOT)}")
 
 

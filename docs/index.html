@@ -679,6 +679,8 @@ footer { padding-block: 40px 110px !important; }
 .select button[aria-pressed="true"], .select button:hover, .select button:focus-visible { color: var(--pom-ink); background: color-mix(in srgb, var(--pom-lava) 22%, transparent); outline: none; }
 .select button[aria-pressed="true"] span:first-child::before { content: "▶ "; }
 .select .status { font-size: 12px; color: var(--pom-ember); min-height: 1.5em; }
+.select .pbar { height: 6px; border: 1px solid color-mix(in srgb, var(--pom-lava) 70%, transparent); background: color-mix(in srgb, var(--pom-lava) 12%, transparent); }
+.select .pbar i { display: block; width: 0; height: 100%; background: var(--pom-ember); }
 .achv {
   display: inline-flex; align-items: center; gap: 12px; margin-top: 18px;
   padding: 10px 14px; border: 2px solid var(--pom-ember); background: color-mix(in srgb, var(--pom-ember) 12%, transparent);
@@ -1005,12 +1007,12 @@ footer { padding-block: 40px 110px !important; }
           <div class="hud"><span class="hearts" aria-label="3 lives">♥♥♥</span><span>SCORE 035000+</span></div>
           <h3>Select track</h3>
           <ol id="tracks">
-            <li><button type="button" aria-pressed="false" data-n="01"><span>Track 01</span><span>audio coming</span></button></li>
-            <li><button type="button" aria-pressed="false" data-n="02"><span>Track 02</span><span>audio coming</span></button></li>
-            <li><button type="button" aria-pressed="false" data-n="03"><span>Track 03</span><span>audio coming</span></button></li>
-            <li><button type="button" aria-pressed="false" data-n="04"><span>Track 04</span><span>audio coming</span></button></li>
+            <li><button type="button" aria-pressed="false" data-src="audio/pompeii-main-theme.mp4" data-title="Main Theme"><span>Main Theme</span><span>2:06</span></button></li>
+            <li><button type="button" aria-pressed="false" data-src="audio/pompeii-post-eruption.mp4" data-title="Post eruption track"><span>Post eruption track</span><span>2:00</span></button></li>
           </ol>
+          <div class="pbar" aria-hidden="true"><i id="trackBar"></i></div>
           <div class="status" id="trackStatus" role="status">pick a track</div>
+          <audio id="ost" preload="none"></audio>
         </div>
       </div>
     </section>
@@ -1917,17 +1919,35 @@ footer { padding-block: 40px 110px !important; }
       g.fillRect(f.x, f.y, f.r * (f.ember ? 1 : 1.6), f.r);
     }
   }
-  const trackStatus = $('#trackStatus');
+  // the two real soundtrack pieces: click to play, click again to pause
+  const trackStatus = $('#trackStatus'), ost = $('#ost'), trackBar = $('#trackBar');
+  const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  let currentTrack = null;
   document.querySelectorAll('#tracks button').forEach((b, i, all) => {
     b.addEventListener('click', () => {
+      if (currentTrack === b && !ost.paused) { ost.pause(); return; }
+      if (currentTrack !== b) { ost.src = b.dataset.src; currentTrack = b; trackBar.style.width = '0'; }
       all.forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
-      blip(660 + i * 110);
-      trackStatus.textContent = `TRACK ${b.dataset.n} · audio file needed`;
+      const p = ost.play();
+      if (p) p.catch(() => { trackStatus.textContent = 'this track could not play'; });
     });
     b.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowDown') { e.preventDefault(); all[(i + 1) % all.length].focus(); blip(520, 0.03); }
       if (e.key === 'ArrowUp') { e.preventDefault(); all[(i + all.length - 1) % all.length].focus(); blip(520, 0.03); }
     });
+  });
+  const trackName = () => (currentTrack ? currentTrack.dataset.title.toUpperCase() : '');
+  ost.addEventListener('timeupdate', () => {
+    if (!currentTrack) return;
+    const d = ost.duration || 0;
+    trackBar.style.width = d ? `${((ost.currentTime / d) * 100).toFixed(2)}%` : '0';
+    trackStatus.textContent = `▶ ${trackName()} · ${fmtTime(ost.currentTime)} / ${fmtTime(d)}`;
+  });
+  ost.addEventListener('pause', () => { if (currentTrack && !ost.ended) trackStatus.textContent = `❚❚ ${trackName()} · paused at ${fmtTime(ost.currentTime)}`; });
+  ost.addEventListener('ended', () => {
+    if (currentTrack) currentTrack.setAttribute('aria-pressed', 'false');
+    currentTrack = null; trackBar.style.width = '0';
+    trackStatus.textContent = 'stage clear · pick a track';
   });
 
   // ---------- 4 · Miku: penlights + piano roll ----------
@@ -2030,7 +2050,7 @@ footer { padding-block: 40px 110px !important; }
   addEventListener('resize', () => { if (!nightSections.hidden) { clearTimeout(musicResize); musicResize = setTimeout(sizeMusic, 150); } });
   function onBranchChange(night) {
     if (night) requestAnimationFrame(() => { sizeMusic(); updateDial(); });
-    else { stopRain(); staticAmt = 0; stat.style.opacity = '0'; }
+    else { stopRain(); staticAmt = 0; stat.style.opacity = '0'; if (!ost.paused) ost.pause(); }
   }
   function musicFrame(now, dt) {
     if (!rain && !strings) sizeMusic();
@@ -2138,6 +2158,7 @@ footer { padding-block: 40px 110px !important; }
   }
   function openConcert() {
     if (!concert.hidden) return;
+    if (!ost.paused) ost.pause();
     concert.hidden = false;
     document.body.style.overflow = 'hidden';
     sizeCrowd();
