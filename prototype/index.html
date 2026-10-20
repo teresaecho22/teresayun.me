@@ -964,7 +964,7 @@ footer { padding-block: 40px 110px !important; }
         <div class="rig">
           <canvas id="strings" aria-label="Six guitar strings under a chord chart; sweep the pointer across them to strum"></canvas>
           <div class="btnrow" style="margin-top:0">
-            <button class="sbtn amp" id="amp" type="button" aria-pressed="false"><i></i><span>amp off</span></button>
+            <button class="sbtn amp" id="amp" type="button" aria-pressed="false"><i></i><span>sound off</span></button>
             <button class="sbtn" id="strum" type="button">strum</button>
           </div>
           <div class="hint">Sweep across the strings to hear Teresa's favourite chord!</div>
@@ -1668,31 +1668,64 @@ footer { padding-block: 40px 110px !important; }
     o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(master);
     o1.start(t0); o2.start(t0); o1.stop(t0 + 2.3); o2.stop(t0 + 2.3);
   }
-  // Karplus-Strong plucked string, with a soft-clip "amp"
+  // warm acoustic guitar: an extended Karplus-Strong string (soft filtered pick, pick-position comb,
+  // fractional delay, low strings ringing longer), then a guitar "body" EQ and a small room reverb
   const ksCache = new Map();
-  let shaper = null;
+  let guitarIn = null;
+  function guitarBus(a) {
+    if (guitarIn) return guitarIn;
+    const peak = (f, q, db) => { const b = a.createBiquadFilter(); b.type = 'peaking'; b.frequency.value = f; b.Q.value = q; b.gain.value = db; return b; };
+    const hs = a.createBiquadFilter(); hs.type = 'highshelf'; hs.frequency.value = 4000; hs.gain.value = -6;
+    const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000; lp.Q.value = 0.7;
+    const chain = [peak(98, 1.2, 5), peak(205, 1.4, 3), peak(1100, 1.0, -2), hs, lp];
+    guitarIn = a.createGain(); guitarIn.gain.value = 0.9;
+    chain.reduce((prev, node) => { prev.connect(node); return node; }, guitarIn);
+    const out = chain.at(-1);
+    // room: a stereo impulse of decaying noise, gently low-passed
+    const len = Math.floor(a.sampleRate * 1.6), ir = a.createBuffer(2, len, a.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch); let y = 0;
+      for (let i = 0; i < len; i++) { y += 0.35 * ((Math.random() * 2 - 1) - y); d[i] = y * Math.pow(1 - i / len, 3); }
+    }
+    const verb = a.createConvolver(); verb.buffer = ir;
+    const dry = a.createGain(); dry.gain.value = 0.82;
+    const wet = a.createGain(); wet.gain.value = 0.22;
+    out.connect(dry); dry.connect(master);
+    out.connect(verb); verb.connect(wet); wet.connect(master);
+    return guitarIn;
+  }
+  function stringBuffer(a, freq, vel) {
+    const key = `${Math.round(freq * 10)}:${Math.round(vel * 4)}`;
+    if (ksCache.has(key)) return ksCache.get(key);
+    const sr = a.sampleRate, total = Math.floor(sr * 3.2), period = sr / freq, L = Math.max(2, Math.round(period));
+    const exc = new Float32Array(L);
+    let y = 0;
+    const soft = 0.28 + 0.3 * vel; // softer pick = fewer highs
+    for (let i = 0; i < L; i++) { y += soft * ((Math.random() * 2 - 1) - y); exc[i] = y; }
+    const k = Math.max(1, Math.round(0.12 * L)); // plucked about 12% from the bridge
+    for (let i = L - 1; i >= k; i--) exc[i] -= exc[i - k];
+    let peakv = 0; for (let i = 0; i < L; i++) peakv = Math.max(peakv, Math.abs(exc[i]));
+    const t60 = 4.2 * Math.pow(82.4 / freq, 0.35), g = Math.pow(10, -3 / (t60 * freq));
+    const buf = a.createBuffer(1, total, sr), out = buf.getChannelData(0);
+    for (let i = 0; i < total; i++) {
+      let x = i < L ? exc[i] / (peakv || 1) : 0;
+      const pos = i - period;
+      if (pos >= 1) {
+        const j = Math.floor(pos), fr = pos - j;
+        const d0 = j + 1 < i ? out[j] * (1 - fr) + out[j + 1] * fr : out[j];
+        const d1 = out[j - 1] * (1 - fr) + out[j] * fr;
+        x += g * 0.5 * (d0 + d1);
+      }
+      out[i] = x;
+    }
+    ksCache.set(key, buf);
+    return buf;
+  }
   function pluck(freq, vel = 0.7) {
     const a = audio(); if (!a) return;
-    const key = Math.round(freq * 10);
-    let buf = ksCache.get(key);
-    if (!buf) {
-      const sr = a.sampleRate, len = Math.floor(sr * 2.2), n = Math.max(2, Math.round(sr / freq));
-      buf = a.createBuffer(1, len, sr);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
-      for (let i = n; i < len; i++) { const j = i - n - 1; d[i] = 0.498 * (d[i - n] + (j >= 0 ? d[j] : 0)); }
-      ksCache.set(key, buf);
-    }
-    if (!shaper) {
-      shaper = a.createWaveShaper();
-      const curve = new Float32Array(1024);
-      for (let i = 0; i < 1024; i++) { const x = (i / 1023) * 2 - 1; curve[i] = Math.tanh(x * 3.2) / Math.tanh(3.2); }
-      shaper.curve = curve;
-      const post = a.createGain(); post.gain.value = 0.5; shaper.connect(post); post.connect(master);
-    }
-    const src = a.createBufferSource(); src.buffer = buf;
-    const g = a.createGain(); g.gain.value = 0.5 * vel;
-    src.connect(g); g.connect(shaper); src.start();
+    const src = a.createBufferSource(); src.buffer = stringBuffer(a, freq, vel);
+    const g = a.createGain(); g.gain.value = 0.16 * (0.5 + 0.5 * vel);
+    src.connect(g); g.connect(guitarBus(a)); src.start();
   }
   function blip(freq, dur = 0.06) {
     const a = audio(); if (!a) return;
@@ -1824,11 +1857,12 @@ footer { padding-block: 40px 110px !important; }
     ampOn = !ampOn;
     if (ampOn) { audio(); pluckString(0, 0.6); }
     ampBtn.setAttribute('aria-pressed', String(ampOn));
-    ampBtn.querySelector('span').textContent = ampOn ? 'amp on' : 'amp off';
+    ampBtn.querySelector('span').textContent = ampOn ? 'sound on' : 'sound off';
   });
   $('#strum').addEventListener('click', () => {
     if (ampOn) audio();
-    for (let i = 0; i < 6; i++) setTimeout(() => pluckString(i, 0.85), i * 22);
+    // a relaxed down-strum: low E first, about 30 ms between strings, each a little different
+    for (let i = 0; i < 6; i++) setTimeout(() => pluckString(i, 0.78 + Math.random() * 0.14), i * 30 + Math.random() * 8);
   });
   function drawStrings(dt) {
     const { g, w, h } = strings;
