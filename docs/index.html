@@ -1039,6 +1039,7 @@ footer { padding-block: 40px 110px !important; }
   <footer class="wrap">
     <span>last trained: Oct 2026</span>
     <span>teresayun.me · prototype v0.6</span>
+    <span class="credit">guitar samples: <a href="https://theremin.music.uiowa.edu/MIS.html" target="_blank" rel="noopener">University of Iowa MIS</a>, via <a href="https://github.com/nbrosowsky/tonejs-instruments" target="_blank" rel="noopener">tonejs-instruments</a> · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a></span>
   </footer>
 </main>
 
@@ -1690,32 +1691,50 @@ footer { padding-block: 40px 110px !important; }
     o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(master);
     o1.start(t0); o2.start(t0); o1.stop(t0 + 2.3); o2.stop(t0 + 2.3);
   }
-  // warm acoustic guitar: an extended Karplus-Strong string (soft filtered pick, pick-position comb,
-  // fractional delay, low strings ringing longer), then a guitar "body" EQ and a small room reverb
+  // acoustic guitar: real recordings (University of Iowa MIS, via tonejs-instruments, CC BY 3.0) for the
+  // Cadd9 notes, a touch of warmth EQ, and a roomy reverb. The Karplus-Strong string below is only a
+  // fallback while the recordings load or if they can't be fetched.
   const ksCache = new Map();
   let guitarIn = null;
   function guitarBus(a) {
     if (guitarIn) return guitarIn;
-    const peak = (f, q, db) => { const b = a.createBiquadFilter(); b.type = 'peaking'; b.frequency.value = f; b.Q.value = q; b.gain.value = db; return b; };
-    const hs = a.createBiquadFilter(); hs.type = 'highshelf'; hs.frequency.value = 4000; hs.gain.value = -6;
-    const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000; lp.Q.value = 0.7;
-    const chain = [peak(98, 1.2, 5), peak(205, 1.4, 3), peak(1100, 1.0, -2), hs, lp];
+    const warm = a.createBiquadFilter(); warm.type = 'lowshelf'; warm.frequency.value = 160; warm.gain.value = 2;
+    const soft = a.createBiquadFilter(); soft.type = 'highshelf'; soft.frequency.value = 6000; soft.gain.value = -3;
     guitarIn = a.createGain(); guitarIn.gain.value = 0.9;
-    chain.reduce((prev, node) => { prev.connect(node); return node; }, guitarIn);
-    const out = chain.at(-1);
-    // room: a stereo impulse of decaying noise, gently low-passed
-    const len = Math.floor(a.sampleRate * 1.6), ir = a.createBuffer(2, len, a.sampleRate);
+    guitarIn.connect(warm); warm.connect(soft);
+    // a bigger, darker room: 2.8 s stereo impulse of decaying noise, after a 22 ms pre-delay
+    const len = Math.floor(a.sampleRate * 2.8), ir = a.createBuffer(2, len, a.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const d = ir.getChannelData(ch); let y = 0;
-      for (let i = 0; i < len; i++) { y += 0.35 * ((Math.random() * 2 - 1) - y); d[i] = y * Math.pow(1 - i / len, 3); }
+      for (let i = 0; i < len; i++) { y += 0.22 * ((Math.random() * 2 - 1) - y); d[i] = y * Math.pow(1 - i / len, 2.4); }
     }
+    const pre = a.createDelay(0.1); pre.delayTime.value = 0.022;
     const verb = a.createConvolver(); verb.buffer = ir;
-    const dry = a.createGain(); dry.gain.value = 0.82;
-    const wet = a.createGain(); wet.gain.value = 0.22;
-    out.connect(dry); dry.connect(master);
-    out.connect(verb); verb.connect(wet); wet.connect(master);
+    const dry = a.createGain(); dry.gain.value = 0.78;
+    const wet = a.createGain(); wet.gain.value = 0.5;
+    soft.connect(dry); dry.connect(master);
+    soft.connect(pre); pre.connect(verb); verb.connect(wet); wet.connect(master);
     return guitarIn;
   }
+  const GUITAR_SAMPLES = { 48: 'C3', 52: 'E3', 55: 'G3', 62: 'D4', 64: 'E4' }; // midi note → file
+  const sampleBufs = new Map();
+  let samplesLoading = null;
+  const fromFile = location.protocol === 'file:'; // browsers block fetch() on file://, so play <audio> there
+  function loadGuitarSamples(a) {
+    if (samplesLoading) return samplesLoading;
+    samplesLoading = fromFile ? Promise.resolve() : Promise.all(Object.entries(GUITAR_SAMPLES).map(([m, n]) =>
+      fetch(`audio/guitar/${n}.mp3`)
+        .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.arrayBuffer(); })
+        .then((b) => a.decodeAudioData(b))
+        .then((buf) => { sampleBufs.set(Number(m), buf); })
+        .catch(() => {})));
+    return samplesLoading;
+  }
+  const nearestSample = (midiN) => {
+    let best = null, bestD = 99;
+    for (const m of Object.keys(GUITAR_SAMPLES).map(Number)) { const d = Math.abs(m - midiN); if (d < bestD) { bestD = d; best = m; } }
+    return bestD <= 4 ? best : null;
+  };
   function stringBuffer(a, freq, vel) {
     const key = `${Math.round(freq * 10)}:${Math.round(vel * 4)}`;
     if (ksCache.has(key)) return ksCache.get(key);
@@ -1745,9 +1764,25 @@ footer { padding-block: 40px 110px !important; }
   }
   function pluck(freq, vel = 0.7) {
     const a = audio(); if (!a) return;
-    const src = a.createBufferSource(); src.buffer = stringBuffer(a, freq, vel);
-    const g = a.createGain(); g.gain.value = 0.16 * (0.5 + 0.5 * vel);
-    src.connect(g); g.connect(guitarBus(a)); src.start();
+    loadGuitarSamples(a);
+    const midiN = Math.round(69 + 12 * Math.log2(freq / 440)), best = nearestSample(midiN);
+    const rate = best === null ? 1 : Math.pow(2, (midiN - best) / 12);
+    if (fromFile && best !== null) {
+      const el = new Audio(`audio/guitar/${GUITAR_SAMPLES[best]}.mp3`);
+      el.preservesPitch = false; el.playbackRate = rate; el.volume = Math.min(1, 0.45 * (0.55 + 0.45 * vel));
+      el.play().catch(() => {});
+      return;
+    }
+    const src = a.createBufferSource(), g = a.createGain();
+    if (best !== null && sampleBufs.has(best)) {
+      src.buffer = sampleBufs.get(best); src.playbackRate.value = rate;
+      g.gain.value = 0.55 * (0.55 + 0.45 * vel);
+    } else {
+      src.buffer = stringBuffer(a, freq, vel);
+      g.gain.value = 0.16 * (0.5 + 0.5 * vel);
+    }
+    src.connect(g); g.connect(guitarBus(a));
+    src.start(); src.stop(a.currentTime + 7);
   }
   function blip(freq, dur = 0.06) {
     const a = audio(); if (!a) return;
@@ -1877,7 +1912,8 @@ footer { padding-block: 40px 110px !important; }
   const ampBtn = $('#amp');
   ampBtn.addEventListener('click', () => {
     ampOn = !ampOn;
-    if (ampOn) { audio(); pluckString(0, 0.6); }
+    // turning the sound on loads the recordings, then rings the open G string as a check
+    if (ampOn) { const a = audio(); if (a) loadGuitarSamples(a).then(() => pluckString(3, 0.6)); }
     ampBtn.setAttribute('aria-pressed', String(ampOn));
     ampBtn.querySelector('span').textContent = ampOn ? 'sound on' : 'sound off';
   });

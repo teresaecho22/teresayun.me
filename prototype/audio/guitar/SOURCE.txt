@@ -1,0 +1,4 @@
+Acoustic guitar samples (C3, E3, G3, D4, E4)
+Recorded by the University of Iowa Electronic Music Studios (MIS): https://theremin.music.uiowa.edu/MIS.html
+Edited and distributed by nbrosowsky/tonejs-instruments: https://github.com/nbrosowsky/tonejs-instruments
+License: CC BY 3.0 https://creativecommons.org/licenses/by/3.0/
