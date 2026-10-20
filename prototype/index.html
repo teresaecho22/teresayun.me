@@ -1890,15 +1890,18 @@ footer { padding-block: 40px 110px !important; }
   const ampBtn = $('#amp');
   ampBtn.addEventListener('click', () => {
     ampOn = !ampOn;
-    // turning the sound on loads the recordings, then rings the open G string as a check
-    if (ampOn) { const a = audio(); if (a) loadGuitarSamples(a).then(() => pluckString(3, 0.6)); }
+    // turning the sound on loads the recordings, then gives the whole chord a soft strum
+    if (ampOn) { const a = audio(); if (a) loadGuitarSamples(a).then(() => strumChord(0.45, 0.1)); }
     ampBtn.setAttribute('aria-pressed', String(ampOn));
     ampBtn.querySelector('span').textContent = ampOn ? 'sound on' : 'sound off';
   });
+  // a relaxed down-strum: low E first, about 30 ms between strings, each a little different
+  function strumChord(base, spread) {
+    for (let i = 0; i < 6; i++) setTimeout(() => pluckString(i, base + Math.random() * spread), i * 30 + Math.random() * 8);
+  }
   $('#strum').addEventListener('click', () => {
     if (ampOn) audio();
-    // a relaxed down-strum: low E first, about 30 ms between strings, each a little different
-    for (let i = 0; i < 6; i++) setTimeout(() => pluckString(i, 0.78 + Math.random() * 0.14), i * 30 + Math.random() * 8);
+    strumChord(0.78, 0.14);
   });
   function drawStrings(dt) {
     const { g, w, h } = strings;
