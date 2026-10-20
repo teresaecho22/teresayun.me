@@ -101,7 +101,7 @@ def build() -> None:
         HEAD + head_part + "\n</head>\n<body>\n" + body_part.lstrip("\n") + "\n</body>\n</html>\n",
         encoding="utf-8",
     )
-    (OUT / "CNAME").write_text(DOMAIN + "\n", encoding="utf-8")
+    (OUT / "CNAME").write_text(DOMAIN, encoding="utf-8")  # no newline: same bytes GitHub writes from Settings → Pages
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     (OUT / "favicon.svg").write_text(FAVICON, encoding="utf-8")
     (OUT / "404.html").write_text(NOT_FOUND, encoding="utf-8")
