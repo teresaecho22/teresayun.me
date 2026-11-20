@@ -1,6 +1,6 @@
 # teresayun.me
 
-Teresa Wong's personal site: one page, a day side (engineer/researcher) and a night side (musician), switched with the toggle at the bottom.
+Teresa Wong's personal site
 
 ## Layout
 
