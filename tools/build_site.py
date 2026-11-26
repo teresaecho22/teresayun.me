@@ -20,8 +20,8 @@ OUT = ROOT / "docs"
 DOMAIN = "teresayun.me"
 TITLE = "Teresa Wong"
 DESCRIPTION = (
-    "Teresa Wong, MIT '30, studying AI and math. Generative models from scratch, "
-    "avionics and controls for the MIT Rocket Team"
+    "Teresa Wong, MIT undergraduate in Artificial Intelligence (6-4) and Mathematics (18). "
+    "Generative models for multi-future trajectory prediction, research, and the MIT Rocket Team."
 )
 
 HEAD = f"""<!doctype html>
@@ -32,7 +32,7 @@ HEAD = f"""<!doctype html>
 <title>{TITLE}</title>
 <meta name="description" content="{DESCRIPTION}">
 <meta name="author" content="Teresa Wong">
-<meta name="theme-color" content="#F1F3F2">
+<meta name="theme-color" content="#1A1B19">
 <link rel="canonical" href="https://{DOMAIN}/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
@@ -42,7 +42,7 @@ HEAD = f"""<!doctype html>
 <meta name="twitter:card" content="summary">
 <style>
 /* the reset the artifact viewer used to provide */
-:root {{ color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }}
+:root {{ color-scheme: dark light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }}
 body {{ margin: 0; font: 14px system-ui, -apple-system, sans-serif; }}
 img {{ max-width: 100%; }}
 [hidden] {{ display: none !important; }}
@@ -50,12 +50,12 @@ img {{ max-width: 100%; }}
 """
 
 FAVICON = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<rect width="64" height="64" rx="14" fill="#15171C"/>
-<g fill="#1F77B4">
+<rect width="64" height="64" rx="14" fill="#1A1B19"/>
+<g fill="#DDD6C9">
 <circle cx="18" cy="18" r="4"/><circle cx="32" cy="18" r="4"/><circle cx="46" cy="18" r="4"/>
 <circle cx="32" cy="31" r="4"/><circle cx="32" cy="44" r="4"/>
 </g>
-<circle cx="46" cy="46" r="5" fill="#FF7F0E"/>
+<circle cx="46" cy="46" r="5" fill="#D9A557"/>
 </svg>
 """
 
@@ -105,14 +105,16 @@ def build() -> None:
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     (OUT / "favicon.svg").write_text(FAVICON, encoding="utf-8")
     (OUT / "404.html").write_text(NOT_FOUND, encoding="utf-8")
-    # files the page loads by relative path (prototype/fonts → docs/fonts, prototype/audio → docs/audio)
-    for folder in ("fonts", "audio"):
+    # files the page loads by relative path (prototype/photos → docs/photos, and so on)
+    for folder in ("photos", "fonts", "audio"):
         src = SRC.parent / folder
         if src.is_dir():
             dst = OUT / folder
             if dst.exists():
                 shutil.rmtree(dst)  # so files removed from the prototype disappear from the site too
             shutil.copytree(src, dst)
+    for name in ("topo-data.js", "Teresa_Wong_CV.pdf"):
+        shutil.copy2(SRC.parent / name, OUT / name)
     print(f"built {OUT.relative_to(ROOT)}/ from {SRC.relative_to(ROOT)}")
 
 

@@ -7,7 +7,8 @@ Teresa Wong's personal site
 | Path | What it is |
 | --- | --- |
 | `prototype/index.html` | The source. Edit this file. It is also what gets published to the Claude artifact preview. |
-| `prototype/fonts/`, `prototype/audio/` | Files the page loads by relative path (the Cookie Monster font, the two Danger in Pompeii tracks as AAC `.mp4`). The build copies them into `docs/`. |
+| `prototype/topo-data.js`, `prototype/photos/`, `prototype/Teresa_Wong_CV.pdf` | Files the page loads by relative path: the elevation grids behind the topo background (Beijing, Tokyo, Switzerland, Boston), the postcard photos, and the CV (phone number removed). The build copies them into `docs/`. |
+| `prototype/fonts/`, `prototype/audio/` | Left over from the old day/night site (Cookie Monster font, Danger in Pompeii tracks). The current page doesn't use them; they're kept for the future music site. |
 | `tools/build_site.py` | Wraps the prototype in a full HTML document and writes the deployable site to `docs/`. |
 | `docs/` | The built site that GitHub Pages serves: `index.html`, `404.html` (`loss = NaN`), `favicon.svg`, `CNAME`, `.nojekyll`. Don't edit by hand; rebuild instead. |
 
@@ -42,8 +43,9 @@ The domain is registered at Cloudflare, so its DNS lives there too.
 
 DNS changes usually show up within minutes on Cloudflare; the HTTPS certificate can take up to an hour.
 
-## Still placeholders
+## Still to do
 
-- Project previews (rocket, VEX) are ASCII stand-ins until the videos are ready.
-- Off-duty photos and the publication thumbnails are drawn placeholders.
-- The リモコン easter egg (↑↑↓↓←→←→BABA) plays an original beat and links to the real song; embed the official video here once the site is on its own domain.
+- Postcard backs (the Memories section) carry placeholder lines; replace them with Teresa's own words.
+- Food stickers (watermelon, tiramisu, banana bread) were planned as decorations but aren't built yet.
+- No Boston postcard yet.
+- The music site is not built; the old day/night page with the music side is in git history before the Nov 2026 redesign.
